@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Homelab Setup Script v2.0
-# This script sets up a modular homelab stack with individual service management
+# Homelab Setup Script
+# This script sets up a comprehensive homelab stack with Docker Compose
 
 set -euo pipefail
 
@@ -37,7 +37,7 @@ print_banner() {
   / /_/ / __ \/ __ `__ \/ _ \/ / __ `/ __ \   \__ \/ __/ __ `/ ___/ //_/
  / __  / /_/ / / / / / /  __/ / /_/ / /_/ /  ___/ / /_/ /_/ / /__/ ,<   
 /_/ /_/\____/_/ /_/ /_/\___/_/\__,_/_.___/  /____/\__/\__,_/\___/_/|_|  
-                                                              v2.0
+                                                          
 
 EOF
 }
@@ -381,19 +381,19 @@ services:
     image: containrrr/watchtower:latest
     container_name: watchtower
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     environment:
       TZ: ${TZ}
-      WATCHTOWER_CLEANUP: "true"
-      WATCHTOWER_SCHEDULE: "0 0 4 * * *"
-      WATCHTOWER_NOTIFICATIONS: email
-      WATCHTOWER_NOTIFICATION_EMAIL_FROM: ${WATCHTOWER_EMAIL_FROM}
-      WATCHTOWER_NOTIFICATION_EMAIL_TO: ${WATCHTOWER_EMAIL_TO}
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: ${WATCHTOWER_EMAIL_SERVER}
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: ${WATCHTOWER_EMAIL_PORT}
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER: ${WATCHTOWER_EMAIL_USER}
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD: ${WATCHTOWER_EMAIL_PASSWORD}
-      WATCHTOWER_INCLUDE_STOPPED: "false"
-      WATCHTOWER_INCLUDE_RESTARTING: "true"
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_SCHEDULE: "0 0 4 * * *"  # 4 AM daily
+      WATCHTOWER_NOTIFICATIONS: ${WATCHTOWER_NOTIFICATIONS:-none}
+      WATCHTOWER_NOTIFICATION_EMAIL_FROM: ${WATCHTOWER_EMAIL_FROM:-}
+      WATCHTOWER_NOTIFICATION_EMAIL_TO: ${WATCHTOWER_EMAIL_TO:-}
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: ${WATCHTOWER_EMAIL_SERVER:-}
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: ${WATCHTOWER_EMAIL_PORT:-}
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER: ${WATCHTOWER_EMAIL_USER:-}
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD: ${WATCHTOWER_EMAIL_PASSWORD:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -453,6 +453,7 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TZ}
+      HOMEPAGE_VAR_DOMAIN: ${DOMAIN}
     volumes:
       - ./config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -649,7 +650,9 @@ setup_wizard() {
     KEYCLOAK_ADMIN_PASS=$(openssl rand -base64 32)
     
     sed -i "s/PIHOLE_PASSWORD=.*/PIHOLE_PASSWORD=$PIHOLE_PASS/" "$HOMELAB_ROOT/.env"
+    sed -i "s/KEYCLOAK_DB_USER=.*/KEYCLOAK_DB_USER=keycloak/" "$HOMELAB_ROOT/.env"
     sed -i "s/KEYCLOAK_DB_PASSWORD=.*/KEYCLOAK_DB_PASSWORD=$KEYCLOAK_DB_PASS/" "$HOMELAB_ROOT/.env"
+    sed -i "s/KEYCLOAK_ADMIN_USER=.*/KEYCLOAK_ADMIN_USER=admin/" "$HOMELAB_ROOT/.env"
     sed -i "s/KEYCLOAK_ADMIN_PASSWORD=.*/KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASS/" "$HOMELAB_ROOT/.env"
     
     log_info "Configuration saved to $HOMELAB_ROOT/.env"
@@ -694,6 +697,8 @@ print_completion() {
     echo ""
     log_info "✅ Homelab deployment complete!"
     echo ""
+    # Load domain from environment
+    source "$HOMELAB_ROOT/.env" 2>/dev/null || true
     echo "🌐 Access your services at:"
     echo "   Homepage: https://$DOMAIN or https://home.$DOMAIN"
     echo "   Traefik: https://traefik.$DOMAIN"

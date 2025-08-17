@@ -47,7 +47,6 @@ chmod +x setup.sh
 homelab-stack/
 ├── docker-compose.yml      # Main service configuration
 ├── setup.sh               # Setup script
-├── setup-v2.sh            # Advanced modular setup (future use)
 ├── .env.example           # Environment variables template
 ├── traefik/               # Traefik configuration
 │   ├── traefik.yml       # Static configuration
@@ -77,7 +76,11 @@ Key variables in `.env`:
 | `CF_EMAIL` | Cloudflare email | `admin@example.com` |
 | `CF_API_TOKEN` | Cloudflare API token | `your-api-token` |
 | `PIHOLE_PASSWORD` | Pi-hole admin password | `secure-password` |
+| `KEYCLOAK_DB_USER` | Keycloak database user | `keycloak` |
+| `KEYCLOAK_DB_PASSWORD` | Keycloak database password | `secure-db-password` |
+| `KEYCLOAK_ADMIN_USER` | Keycloak admin username | `admin` |
 | `KEYCLOAK_ADMIN_PASSWORD` | Keycloak admin password | `secure-password` |
+| `WATCHTOWER_NOTIFICATIONS` | Email notifications (optional) | `none` or `email` |
 
 ### Security Notes
 

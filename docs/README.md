@@ -122,8 +122,8 @@ git clone https://github.com/yourusername/homelab-stack.git
 cd homelab-stack
 
 # Run the setup wizard
-chmod +x setup-v2.sh
-./setup-v2.sh --wizard
+chmod +x setup.sh
+./setup.sh --wizard
 ```
 
 ### Manual Installation
@@ -138,7 +138,7 @@ chmod +x setup-v2.sh
 2. **Run Setup**
    ```bash
    # Run setup without wizard
-   ./setup-v2.sh
+./setup.sh
    ```
 
 3. **Verify Installation**
@@ -160,7 +160,11 @@ Key variables in `/opt/homelab/.env`:
 | `CF_EMAIL` | Cloudflare email | `admin@example.com` |
 | `CF_API_TOKEN` | Cloudflare API token | `your-api-token` |
 | `PIHOLE_PASSWORD` | Pi-hole admin password | `secure-password` |
+| `KEYCLOAK_DB_USER` | Keycloak database user | `keycloak` |
+| `KEYCLOAK_DB_PASSWORD` | Keycloak database password | `secure-db-password` |
+| `KEYCLOAK_ADMIN_USER` | Keycloak admin username | `admin` |
 | `KEYCLOAK_ADMIN_PASSWORD` | Keycloak admin password | `secure-password` |
+| `WATCHTOWER_NOTIFICATIONS` | Email notifications (optional) | `none` or `email` |
 
 ### Service Ports
 
