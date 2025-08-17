@@ -147,7 +147,12 @@ validate_service_documentation() {
 
         # Get all services
         local services
-        services=($(extract_services "$compose_file"))
+        if command -v mapfile >/dev/null 2>&1; then
+            mapfile -t services < <(extract_services "$compose_file")
+        else
+            # Fallback for systems without mapfile
+            IFS=$'\n' read -d '' -r -a services < <(extract_services "$compose_file" && printf '\0')
+        fi
 
         for service in "${services[@]}"; do
             if [ -z "$service" ]; then
@@ -182,7 +187,12 @@ validate_service_documentation() {
 
             # Check service configuration
             local config_issues
-            config_issues=($(check_service_configuration "$compose_file" "$service"))
+            if command -v mapfile >/dev/null 2>&1; then
+                mapfile -t config_issues < <(check_service_configuration "$compose_file" "$service")
+            else
+                # Fallback for systems without mapfile
+                IFS=$'\n' read -d '' -r -a config_issues < <(check_service_configuration "$compose_file" "$service" && printf '\0')
+            fi
 
             if [ ${#config_issues[@]} -gt 0 ]; then
                 ((services_with_issues++))

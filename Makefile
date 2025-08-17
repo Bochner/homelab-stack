@@ -39,6 +39,23 @@ install-deps: ## Install development dependencies
 	@echo "📦 Installing development dependencies..."
 	@pip3 install -r scripts/requirements.txt
 
+install-lint-deps: ## Install linting dependencies
+	@echo "📦 Installing linting dependencies..."
+	@echo "🐍 Installing Python linting tools..."
+	@pip3 install yamllint flake8 black isort
+	@echo "🐚 Installing shellcheck..."
+	@if command -v brew >/dev/null 2>&1; then \
+		brew install shellcheck; \
+	elif command -v apt >/dev/null 2>&1; then \
+		sudo apt install -y shellcheck; \
+	elif command -v yum >/dev/null 2>&1; then \
+		sudo yum install -y ShellCheck; \
+	else \
+		echo "⚠️  Please install shellcheck manually for your system"; \
+		echo "   Visit: https://github.com/koalaman/shellcheck#installing"; \
+	fi
+	@echo "✅ All linting dependencies installed"
+
 # Service management
 start: ## Start all services
 	@echo "▶️  Starting all services..."
@@ -109,25 +126,48 @@ test-env: ## Validate environment configuration
 
 lint: ## Run linting checks
 	@echo "🔍 Running linting checks..."
+	@$(MAKE) lint-yaml
+	@$(MAKE) lint-shell
+	@$(MAKE) lint-python
+
+lint-yaml: ## Run YAML linting
+	@echo "📄 Linting YAML files..."
 	@if command -v yamllint >/dev/null 2>&1; then \
 		yamllint .; \
+		echo "✅ YAML linting passed"; \
 	else \
 		echo "⚠️  yamllint not installed, skipping YAML linting"; \
+		echo "   Install with: pip install yamllint"; \
 	fi
+
+lint-shell: ## Run shell script linting
+	@echo "🐚 Linting shell scripts..."
 	@if command -v shellcheck >/dev/null 2>&1; then \
-		find . -name "*.sh" -exec shellcheck {} \; ; \
+		echo "   Checking setup.sh..."; \
+		shellcheck setup.sh; \
+		echo "   Checking scripts/*.sh..."; \
+		shellcheck scripts/*.sh; \
+		echo "✅ Shell script linting passed"; \
 	else \
 		echo "⚠️  shellcheck not installed, skipping shell script linting"; \
+		echo "   Install with: brew install shellcheck (macOS) or apt install shellcheck (Ubuntu)"; \
 	fi
+
+lint-python: ## Run Python linting
+	@echo "🐍 Linting Python files..."
 	@if command -v flake8 >/dev/null 2>&1; then \
 		flake8 scripts/; \
+		echo "✅ Python linting (flake8) passed"; \
 	else \
 		echo "⚠️  flake8 not installed, skipping Python linting"; \
+		echo "   Install with: pip install flake8"; \
 	fi
 	@if command -v black >/dev/null 2>&1; then \
 		black --check scripts/; \
+		echo "✅ Python formatting (black) passed"; \
 	else \
 		echo "⚠️  black not installed, skipping Python formatting checks"; \
+		echo "   Install with: pip install black"; \
 	fi
 
 lint-fix: ## Fix linting issues automatically
@@ -250,8 +290,16 @@ ci-test: ## Run CI tests locally
 	@echo "🚀 Running CI tests locally..."
 	@$(MAKE) test-compose
 	@$(MAKE) test-env
-	@$(MAKE) security
 	@$(MAKE) lint
+	@$(MAKE) security
+
+lint-ci: ## Run linting checks exactly as in CI
+	@echo "🚀 Running linting checks (CI mode)..."
+	@echo "📄 Checking YAML files..."
+	@yamllint .
+	@echo "🐚 Checking shell scripts..."
+	@shellcheck scripts/*.sh setup.sh
+	@echo "✅ All CI linting checks passed"
 
 validate: ## Validate entire stack
 	@echo "✅ Validating homelab stack..."

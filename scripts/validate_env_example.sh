@@ -20,7 +20,7 @@ extract_env_vars_from_compose() {
     local compose_file=$1
 
     # Find all ${VAR} and ${VAR:-default} patterns
-    grep -o '\${[^}]*}' "$compose_file" 2>/dev/null | \
+    grep -o "\${[^}]*}" "$compose_file" 2>/dev/null | \
         sed 's/\${//g' | \
         sed 's/}//g' | \
         sed 's/:-.*//' | \
@@ -51,7 +51,7 @@ validate_env_completeness() {
     fi
 
     # Collect all environment variables from compose files (exclude templates)
-    local all_compose_vars=()
+
     local compose_files=(
         "docker-compose.yml"
         "docker-compose.yaml"
@@ -62,11 +62,12 @@ validate_env_completeness() {
         if [[ "$file" != *"template"* ]]; then
             compose_files+=("$file")
         fi
-    done < <(find . -name "docker-compose*.yml" -o -name "docker-compose*.yaml" -print0 2>/dev/null)
+    done < <(find . \( -name "docker-compose*.yml" -o -name "docker-compose*.yaml" \) -print0 2>/dev/null)
 
     print_status "$YELLOW" "📁 Scanning compose files for environment variables..."
 
-    local temp_vars_file=$(mktemp)
+    local temp_vars_file
+    temp_vars_file=$(mktemp)
     for compose_file in "${compose_files[@]}"; do
         if [ -f "$compose_file" ]; then
             print_status "$YELLOW" "   Scanning $compose_file"
@@ -76,12 +77,22 @@ validate_env_completeness() {
 
     # Get unique variables from all compose files
     local compose_vars
-    compose_vars=($(sort -u "$temp_vars_file"))
+    if command -v mapfile >/dev/null 2>&1; then
+        mapfile -t compose_vars < <(sort -u "$temp_vars_file")
+    else
+        # Fallback for systems without mapfile
+        IFS=$'\n' read -d '' -r -a compose_vars < <(sort -u "$temp_vars_file" && printf '\0')
+    fi
     rm -f "$temp_vars_file"
 
     # Get variables from .env.example
     local env_example_vars
-    env_example_vars=($(extract_vars_from_env_example))
+    if command -v mapfile >/dev/null 2>&1; then
+        mapfile -t env_example_vars < <(extract_vars_from_env_example)
+    else
+        # Fallback for systems without mapfile
+        IFS=$'\n' read -d '' -r -a env_example_vars < <(extract_vars_from_env_example && printf '\0')
+    fi
 
     print_status "$GREEN" "📊 Analysis Results:"
     print_status "$GREEN" "   Variables in compose files: ${#compose_vars[@]}"

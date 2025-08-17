@@ -1,8 +1,8 @@
-# CI/CD Simplified for Homelab Use
+# Homelab CI/CD Documentation
 
 ## 🏠 Overview
 
-This document summarizes the simplified CI/CD pipeline designed specifically for homelab use. All enterprise-level security scanning and team organization features have been removed to focus on what's essential for personal homelab deployment.
+This document outlines the simplified CI/CD pipeline designed specifically for homelab use. All enterprise-level security scanning and team organization features have been removed to focus on what's essential for personal homelab deployment.
 
 ## ✅ Simplified Features
 

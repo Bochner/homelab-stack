@@ -152,7 +152,7 @@ main() {
     # Add any other compose files found
     while IFS= read -r -d '' file; do
         compose_files+=("$file")
-    done < <(find . -name "docker-compose*.yml" -o -name "docker-compose*.yaml" -print0 2>/dev/null)
+    done < <(find . \( -name "docker-compose*.yml" -o -name "docker-compose*.yaml" \) -print0 2>/dev/null)
 
     # Remove duplicates and non-existent files
     local seen_files=()

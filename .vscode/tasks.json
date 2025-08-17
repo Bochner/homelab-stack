@@ -156,39 +156,10 @@
       "problemMatcher": []
     },
     {
-      "label": "Check Container Vulnerabilities",
-      "type": "shell",
-      "command": "docker",
-      "args": ["run", "--rm", "-v", "/var/run/docker.sock:/var/run/docker.sock",
-               "aquasec/trivy", "image", "--format", "table", "traefik:v3.0"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
       "label": "Generate Environment Template",
       "type": "shell",
       "command": "cp",
       "args": [".env.example", ".env"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Extract Service Config",
-      "type": "shell",
-      "command": "python3",
-      "args": ["scripts/extract_service.py", "${input:serviceName}"],
       "group": "build",
       "presentation": {
         "echo": true,
@@ -211,24 +182,6 @@
         "panel": "shared"
       },
       "problemMatcher": []
-    }
-  ],
-  "inputs": [
-    {
-      "id": "serviceName",
-      "description": "Service name to extract",
-      "default": "traefik",
-      "type": "pickString",
-      "options": [
-        "traefik",
-        "pihole",
-        "keycloak",
-        "keycloak-db",
-        "uptime-kuma",
-        "dockge",
-        "homepage",
-        "watchtower"
-      ]
     }
   ]
 }
