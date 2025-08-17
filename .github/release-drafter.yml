@@ -1,6 +1,5 @@
 name-template: 'v$RESOLVED_VERSION 🌟'
 tag-template: 'v$RESOLVED_VERSION'
-
 categories:
   - title: '🚀 Features'
     labels:
@@ -11,27 +10,20 @@ categories:
       - 'fix'
       - 'bugfix'
       - 'bug'
-  - title: '🔒 Security'
+  - title: '🧰 Maintenance'
     labels:
-      - 'security'
+      - 'chore'
+      - 'dependencies'
+      - 'maintenance'
   - title: '📚 Documentation'
     labels:
       - 'documentation'
       - 'docs'
-  - title: '🏗️ Infrastructure'
+  - title: '🔒 Security'
     labels:
-      - 'ci'
-      - 'infrastructure'
-      - 'devops'
-  - title: '🧰 Maintenance'
-    labels:
-      - 'chore'
-      - 'maintenance'
-      - 'dependencies'
-
+      - 'security'
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
-
 version-resolver:
   major:
     labels:
@@ -41,57 +33,22 @@ version-resolver:
     labels:
       - 'minor'
       - 'feature'
+      - 'enhancement'
   patch:
     labels:
       - 'patch'
       - 'fix'
       - 'bugfix'
-      - 'security'
+      - 'bug'
+      - 'chore'
+      - 'dependencies'
+      - 'maintenance'
   default: patch
-
 template: |
   ## Changes
 
   $CHANGES
 
-  ## Security Notes
+  ## Contributors
 
-  - All container images have been scanned for vulnerabilities
-  - Security configurations have been validated
-  - No breaking changes to security policies
-
-  ## Upgrade Instructions
-
-  1. Backup your current configuration:
-     ```bash
-     cp .env .env.backup
-     cp -r traefik/ traefik.backup/
-     ```
-
-  2. Pull the latest changes:
-     ```bash
-     git pull origin main
-     ```
-
-  3. Review any changes to `.env.example` and update your `.env` accordingly
-
-  4. Update and restart services:
-     ```bash
-     docker compose pull
-     docker compose up -d
-     ```
-
-  5. Verify all services are healthy:
-     ```bash
-     python3 scripts/health_check.py
-     ```
-
-  ## What's Changed
-
-  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
-
-  ## Support
-
-  - 📖 [Documentation](https://github.com/$OWNER/$REPOSITORY/tree/main/docs)
-  - 🐛 [Report Issues](https://github.com/$OWNER/$REPOSITORY/issues)
-  - 💬 [Discussions](https://github.com/$OWNER/$REPOSITORY/discussions)
+  $CONTRIBUTORS
