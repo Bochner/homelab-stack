@@ -7,16 +7,17 @@ http:
         users:
           # ⚠️  SECURITY WARNING: CHANGE THIS IMMEDIATELY! ⚠️
           # Current credentials: admin:admin (DEFAULT - INSECURE!)
-          # 
+          #
           # To generate a secure password hash:
           # 1. Install apache2-utils: sudo apt-get install apache2-utils
           # 2. Generate hash: echo $(htpasswd -nB admin) | sed -e s/\\$/\\$\\$/g
           # 3. Replace the line below with your generated hash
-          # 
+          #
           # Example secure hash format:
           # - "admin:$2y$10$YOURGENERATEDHASHHERE"
           - "admin:$2y$10$2b2cu2Fw1ZfqRkqBfXkKyOeH69z9/oIpxVCD9gUseXJU6fcZWoKQC"
-    
+
+
     # Security Headers
     security-headers:
       headers:
@@ -40,7 +41,8 @@ http:
         browserXssFilter: true
         customResponseHeaders:
           X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
-    
+
+
     # Rate Limiting
     rate-limit:
       rateLimit:

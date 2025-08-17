@@ -119,21 +119,21 @@ lint: ## Run linting checks
 	else \
 		echo "⚠️  shellcheck not installed, skipping shell script linting"; \
 	fi
-	@if python3 -c "import flake8" 2>/dev/null; then \
-		python3 -m flake8 scripts/; \
+	@if command -v flake8 >/dev/null 2>&1; then \
+		flake8 scripts/; \
 	else \
 		echo "⚠️  flake8 not installed, skipping Python linting"; \
 	fi
-	@if python3 -c "import black" 2>/dev/null; then \
-		python3 -m black --check scripts/; \
+	@if command -v black >/dev/null 2>&1; then \
+		black --check scripts/; \
 	else \
 		echo "⚠️  black not installed, skipping Python formatting checks"; \
 	fi
 
 lint-fix: ## Fix linting issues automatically
 	@echo "🔧 Fixing linting issues..."
-	@python3 -m black scripts/
-	@python3 -m isort scripts/
+	@black scripts/
+	@isort scripts/
 
 security: ## Run security audit
 	@echo "🔒 Running security audit..."

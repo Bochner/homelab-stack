@@ -20,3 +20,15 @@ tqdm>=4.65.0
 
 # Optional: Better date/time handling
 python-dateutil>=2.8.2
+
+# Development and linting tools
+# YAML linting
+yamllint>=1.32.0
+
+# Python code linting and formatting
+flake8>=6.0.0
+black>=23.0.0
+isort>=5.12.0
+
+# Additional code quality tools
+mypy>=1.5.0

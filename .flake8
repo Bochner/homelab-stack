@@ -1,0 +1,45 @@
+# flake8 configuration for homelab stack
+[flake8]
+
+# Maximum line length to match Black's default
+max-line-length = 88
+
+# Ignore specific error codes that are common in homelab scripts
+ignore =
+    E203,
+    E501,
+    W503,
+    W504,
+    F401,
+    F841
+
+# Files to exclude from linting
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    .env,
+    build,
+    dist,
+    *.egg-info,
+    volumes,
+    data,
+    logs
+
+# Enable additional checks
+select =
+    E,
+    W,
+    F,
+    C,
+    N
+
+# Complexity settings
+max-complexity = 20
+
+# Per-file ignores for specific files
+per-file-ignores =
+    __init__.py:F401,
+    config.py:E501,
+    test_integration.py:E722

@@ -8,9 +8,9 @@
 networks:
   homelab_net:
     external: true
-  # Optional: Add internal network for multi-container services
-  # internal:
-  #   internal: true
+    # Optional: Add internal network for multi-container services
+    # internal:
+    #   internal: true
 
 volumes:
   # Main data volume
@@ -90,15 +90,15 @@ services:
       retries: 3
       start_period: 60s
 
-    # Resource limits (optional but recommended)
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '1.0'
-    #       memory: 1G
-    #     reservations:
-    #       cpus: '0.5'
-    #       memory: 512M
+      # Resource limits (optional but recommended)
+      # deploy:
+      #   resources:
+      #     limits:
+      #       cpus: '1.0'
+      #       memory: 1G
+      #     reservations:
+      #       cpus: '0.5'
+      #       memory: 512M
 
     # Depends on other services (if needed)
     # depends_on:
