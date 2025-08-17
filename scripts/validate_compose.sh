@@ -69,15 +69,17 @@ validate_compose_file() {
         return 1
     fi
 
-    # Validate YAML syntax
-    if ! docker compose -f "$compose_file" config >/dev/null 2>&1; then
+    # Validate YAML syntax (skip template files as they contain placeholders)
+    if [[ "$compose_file" == *"template"* ]]; then
+        print_status "$YELLOW" "⚠️  Skipping YAML validation for template file: $compose_file"
+    elif ! docker compose -f "$compose_file" config >/dev/null 2>&1; then
         print_status "$RED" "❌ Invalid YAML syntax in $compose_file"
         docker compose -f "$compose_file" config 2>&1 | head -10
         return 1
     fi
 
-    # Validate with environment file if available
-    if [ -f "$env_file" ]; then
+    # Validate with environment file if available (skip template files)
+    if [ -f "$env_file" ] && [[ "$compose_file" != *"template"* ]]; then
         if ! docker compose -f "$compose_file" --env-file "$env_file" config >/dev/null 2>&1; then
             print_status "$RED" "❌ Validation failed with environment file: $compose_file"
             docker compose -f "$compose_file" --env-file "$env_file" config 2>&1 | head -10
@@ -153,16 +155,28 @@ main() {
     done < <(find . -name "docker-compose*.yml" -o -name "docker-compose*.yaml" -print0 2>/dev/null)
 
     # Remove duplicates and non-existent files
-    declare -A seen
+    local seen_files=()
     for file in "${compose_files[@]}"; do
-        if [ -f "$file" ] && [ -z "${seen[$file]:-}" ]; then
-            seen[$file]=1
-
-            ((total++))
-            if ! validate_compose_file "$file"; then
-                ((failed++))
+        if [ -f "$file" ]; then
+            # Check if file is already in seen_files array
+            local already_seen=false
+            if [ ${#seen_files[@]} -gt 0 ]; then
+                for seen_file in "${seen_files[@]}"; do
+                    if [ "$file" = "$seen_file" ]; then
+                        already_seen=true
+                        break
+                    fi
+                done
             fi
-            echo
+
+            if [ "$already_seen" = false ]; then
+                seen_files+=("$file")
+                ((total++))
+                if ! validate_compose_file "$file"; then
+                    ((failed++))
+                fi
+                echo
+            fi
         fi
     done
 

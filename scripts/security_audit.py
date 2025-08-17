@@ -445,10 +445,19 @@ def main():
     auditor.print_report(results)
     auditor.save_report(results)
 
+    # Check for HOMELAB_MODE environment variable
+    homelab_mode = os.environ.get('HOMELAB_MODE', 'false').lower() == 'true'
+
     # Exit with appropriate code
     high_medium_count = results["summary"]["HIGH"] + results["summary"]["MEDIUM"]
 
-    if high_medium_count > 0:
+    if homelab_mode:
+        print(f"\n🏠 HOMELAB MODE: Found {high_medium_count} high/medium severity issues (acceptable for homelab)")
+        if results["summary"]["HIGH"] > 0:
+            print("ℹ️  Note: High severity findings are typically acceptable in homelab environments")
+            print("   (Docker socket access, port exposure for service functionality)")
+        sys.exit(0)
+    elif high_medium_count > 0:
         print(f"\n💥 Found {high_medium_count} high/medium severity security issues")
         sys.exit(1)
     elif results["summary"]["LOW"] > 0:

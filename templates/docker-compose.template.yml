@@ -1,4 +1,5 @@
-version: '3.9'
+# Docker Compose Template for Homelab Stack Services
+# No version needed for Docker Compose v2+
 
 # Template for adding new services to the homelab stack
 # Copy this file to /opt/homelab/services/your-service/docker-compose.yml
@@ -15,7 +16,7 @@ volumes:
   # Main data volume
   <service_name>_data:
     name: <service_name>_data
-  
+
   # Add more volumes as needed
   # <service_name>_config:
   #   name: <service_name>_config
@@ -25,58 +26,58 @@ services:
     image: <image_name>:<tag>
     container_name: <service_name>
     restart: unless-stopped
-    
+
     # Security options
     security_opt:
       - no-new-privileges:true
-    
+
     # User/Group (if needed)
     # user: "1000:1000"
-    
+
     # Environment variables
     environment:
       - TZ=${TZ}
       # Add service-specific variables
       # - <SERVICE_VAR>=${<SERVICE_VAR>}
-    
+
     # Volumes
     volumes:
       - <service_name>_data:/data
       # Add more volume mappings
       # - <service_name>_config:/config
       # - /path/on/host:/path/in/container:ro
-    
+
     # Network configuration
     networks:
       homelab_net:
-        ipv4_address: 10.0.0.<XX>  # Choose unused IP (check with: docker network inspect homelab_net)
-    
+        ipv4_address: 10.0.0.<XX> # Choose unused IP (check with: docker network inspect homelab_net)
+
     # Traefik labels for reverse proxy
     labels:
       # Enable Traefik
       - "traefik.enable=true"
-      
+
       # Router configuration
       - "traefik.http.routers.<service_name>.rule=Host(`<service_name>.${DOMAIN}`)"
       - "traefik.http.routers.<service_name>.entrypoints=websecure"
       - "traefik.http.routers.<service_name>.tls.certresolver=cloudflare"
-      
+
       # Service configuration
       - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
-      
+
       # Middleware (choose as needed)
       # Basic auth (configured in Traefik dynamic.yml)
       # - "traefik.http.routers.<service_name>.middlewares=auth@file"
-      
+
       # Security headers
       - "traefik.http.routers.<service_name>.middlewares=security-headers@file"
-      
+
       # Rate limiting
       # - "traefik.http.routers.<service_name>.middlewares=rate-limit@file"
-      
+
       # Combined middleware
       # - "traefik.http.routers.<service_name>.middlewares=auth@file,security-headers@file,rate-limit@file"
-    
+
     # Health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:<port>/health"]
@@ -88,7 +89,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-    
+
     # Resource limits (optional but recommended)
     # deploy:
     #   resources:
@@ -98,16 +99,16 @@ services:
     #     reservations:
     #       cpus: '0.5'
     #       memory: 512M
-    
+
     # Depends on other services (if needed)
     # depends_on:
     #   <service_name>-db:
     #     condition: service_healthy
-    
+
     # Ports (only if direct access needed, prefer Traefik)
     # ports:
     #   - "8080:80"
-    
+
     # Logging configuration
     # logging:
     #   driver: "json-file"
@@ -134,5 +135,4 @@ services:
   #     interval: 10s
   #     timeout: 5s
   #     retries: 5
-
 # vim: set ft=yaml:

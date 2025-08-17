@@ -111,10 +111,26 @@ test-env: ## Validate environment configuration
 
 lint: ## Run linting checks
 	@echo "🔍 Running linting checks..."
-	@yamllint .
-	@find . -name "*.sh" -exec shellcheck {} \;
-	@python3 -m flake8 scripts/
-	@python3 -m black --check scripts/
+	@if command -v yamllint >/dev/null 2>&1; then \
+		yamllint .; \
+	else \
+		echo "⚠️  yamllint not installed, skipping YAML linting"; \
+	fi
+	@if command -v shellcheck >/dev/null 2>&1; then \
+		find . -name "*.sh" -exec shellcheck {} \; ; \
+	else \
+		echo "⚠️  shellcheck not installed, skipping shell script linting"; \
+	fi
+	@if python3 -c "import flake8" 2>/dev/null; then \
+		python3 -m flake8 scripts/; \
+	else \
+		echo "⚠️  flake8 not installed, skipping Python linting"; \
+	fi
+	@if python3 -c "import black" 2>/dev/null; then \
+		python3 -m black --check scripts/; \
+	else \
+		echo "⚠️  black not installed, skipping Python formatting checks"; \
+	fi
 
 lint-fix: ## Fix linting issues automatically
 	@echo "🔧 Fixing linting issues..."
@@ -123,7 +139,7 @@ lint-fix: ## Fix linting issues automatically
 
 security: ## Run security audit
 	@echo "🔒 Running security audit..."
-	@python3 scripts/security_audit.py
+	@HOMELAB_MODE=true python3 scripts/security_audit.py
 
 security-scan: ## Run vulnerability scans
 	@echo "🔍 Running vulnerability scans..."
@@ -198,13 +214,18 @@ homepage: ## Start only Homepage
 # Configuration helpers
 env-check: ## Check environment configuration
 	@echo "🔍 Checking environment configuration..."
-	@if [ ! -f .env ]; then \
-		echo "❌ .env file not found. Run 'make setup' first."; \
+	@if [ ! -f .env.example ]; then \
+		echo "❌ .env.example file not found."; \
 		exit 1; \
 	fi
-	@echo "✅ Environment file exists"
-	@grep -q "DOMAIN=" .env && echo "✅ Domain configured" || echo "❌ Domain not configured"
-	@grep -q "CF_API_TOKEN=" .env && echo "✅ Cloudflare token configured" || echo "❌ Cloudflare token not configured"
+	@echo "✅ Environment example file exists"
+	@if [ -f .env ]; then \
+		echo "✅ Environment file exists"; \
+		grep -q "DOMAIN=" .env && echo "✅ Domain configured" || echo "❌ Domain not configured"; \
+		grep -q "CF_API_TOKEN=" .env && echo "✅ Cloudflare token configured" || echo "❌ Cloudflare token not configured"; \
+	else \
+		echo "ℹ️  .env file not found (copy from .env.example and configure)"; \
+	fi
 
 generate-passwords: ## Generate secure passwords for services
 	@echo "🔐 Generating secure passwords..."

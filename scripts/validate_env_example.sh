@@ -50,17 +50,18 @@ validate_env_completeness() {
         return 1
     fi
 
-    # Collect all environment variables from compose files
+    # Collect all environment variables from compose files (exclude templates)
     local all_compose_vars=()
     local compose_files=(
         "docker-compose.yml"
         "docker-compose.yaml"
-        "templates/docker-compose.template.yml"
     )
 
-    # Find additional compose files
+    # Find additional compose files (exclude templates)
     while IFS= read -r -d '' file; do
-        compose_files+=("$file")
+        if [[ "$file" != *"template"* ]]; then
+            compose_files+=("$file")
+        fi
     done < <(find . -name "docker-compose*.yml" -o -name "docker-compose*.yaml" -print0 2>/dev/null)
 
     print_status "$YELLOW" "📁 Scanning compose files for environment variables..."
