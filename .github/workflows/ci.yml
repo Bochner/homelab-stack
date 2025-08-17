@@ -39,9 +39,25 @@ jobs:
         KEYCLOAK_ADMIN_PASSWORD=test-pass
         WATCHTOWER_NOTIFICATIONS=none
         EOF
-          docker compose -f templates/docker-compose.template.yml --env-file .env.test config > /dev/null
+
+          # Create a temporary compose file with placeholders replaced
+          cp templates/docker-compose.template.yml docker-compose.template.test.yml
+
+          # Replace placeholders with valid test values (Linux sed syntax)
+          sed -i 's/<service_name>/testservice/g' docker-compose.template.test.yml
+          sed -i 's/<image_name>/nginx/g' docker-compose.template.test.yml
+          sed -i 's/<tag>/alpine/g' docker-compose.template.test.yml
+          sed -i 's/<port>/80/g' docker-compose.template.test.yml
+          sed -i 's/<XX>/99/g' docker-compose.template.test.yml
+          sed -i 's/<SERVICE_VAR>/TEST_VAR/g' docker-compose.template.test.yml
+          sed -i 's/<SERVICE_NAME>/TESTSERVICE/g' docker-compose.template.test.yml
+
+          # Validate the processed template
+          docker compose -f docker-compose.template.test.yml --env-file .env.test config > /dev/null
           echo "✅ Template docker-compose.yml is valid"
-          rm .env.test
+
+          # Cleanup
+          rm .env.test docker-compose.template.test.yml
         fi
 
   basic-lint:

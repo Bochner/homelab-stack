@@ -69,9 +69,42 @@ validate_compose_file() {
         return 1
     fi
 
-    # Validate YAML syntax (skip template files as they contain placeholders)
+    # Validate YAML syntax (handle template files with placeholder replacement)
     if [[ "$compose_file" == *"template"* ]]; then
-        print_status "$YELLOW" "⚠️  Skipping YAML validation for template file: $compose_file"
+        print_status "$YELLOW" "🔧 Validating template file with placeholder replacement: $compose_file"
+        # Create a temporary copy with placeholders replaced for validation
+        local temp_file="${compose_file}.validation.tmp"
+        cp "$compose_file" "$temp_file"
+
+        # Detect OS for sed syntax compatibility
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS sed syntax
+            sed -i '' 's/<service_name>/testservice/g' "$temp_file"
+            sed -i '' 's/<image_name>/nginx/g' "$temp_file"
+            sed -i '' 's/<tag>/alpine/g' "$temp_file"
+            sed -i '' 's/<port>/80/g' "$temp_file"
+            sed -i '' 's/<XX>/99/g' "$temp_file"
+            sed -i '' 's/<SERVICE_VAR>/TEST_VAR/g' "$temp_file"
+            sed -i '' 's/<SERVICE_NAME>/TESTSERVICE/g' "$temp_file"
+        else
+            # Linux sed syntax
+            sed -i 's/<service_name>/testservice/g' "$temp_file"
+            sed -i 's/<image_name>/nginx/g' "$temp_file"
+            sed -i 's/<tag>/alpine/g' "$temp_file"
+            sed -i 's/<port>/80/g' "$temp_file"
+            sed -i 's/<XX>/99/g' "$temp_file"
+            sed -i 's/<SERVICE_VAR>/TEST_VAR/g' "$temp_file"
+            sed -i 's/<SERVICE_NAME>/TESTSERVICE/g' "$temp_file"
+        fi
+
+        # Validate the processed template
+        if ! docker compose -f "$temp_file" config >/dev/null 2>&1; then
+            print_status "$RED" "❌ Template validation failed: $compose_file"
+            docker compose -f "$temp_file" config 2>&1 | head -10
+            rm -f "$temp_file"
+            return 1
+        fi
+        rm -f "$temp_file"
     elif ! docker compose -f "$compose_file" config >/dev/null 2>&1; then
         print_status "$RED" "❌ Invalid YAML syntax in $compose_file"
         docker compose -f "$compose_file" config 2>&1 | head -10
