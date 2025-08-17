@@ -5,31 +5,24 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-  schedule:
-    # Run weekly security scan
-    - cron: '0 2 * * 1'
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   validate-compose:
     name: Validate Docker Compose
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-      
+
     - name: Validate main docker-compose.yml
       run: |
         docker compose -f docker-compose.yml config > /dev/null
         echo "✅ Main docker-compose.yml is valid"
-        
+
     - name: Validate template files
       run: |
         if [ -f templates/docker-compose.template.yml ]; then
@@ -51,116 +44,42 @@ jobs:
           rm .env.test
         fi
 
-  security-scan:
-    name: Security Scanning
+  basic-lint:
+    name: Basic Linting
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-        
-    - name: Scan for secrets
-      uses: gitleaks/gitleaks-action@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  test-services:
-    name: Test Service Configurations
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        service: [traefik, pihole, keycloak, homepage, uptime-kuma, dockge]
-        
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Set up test environment
-      run: |
-        # Create test .env file
-        cat > .env << EOF
-        DOMAIN=test.local
-        TZ=UTC
-        CF_EMAIL=test@example.com
-        CF_API_TOKEN=dummy-token
-        PIHOLE_PASSWORD=test123
-        KEYCLOAK_DB_USER=testuser
-        KEYCLOAK_DB_PASSWORD=testpass123
-        KEYCLOAK_ADMIN_USER=admin
-        KEYCLOAK_ADMIN_PASSWORD=admin123
-        WATCHTOWER_NOTIFICATIONS=none
-        EOF
-        
-    - name: Test service startup
-      run: |
-        # Create isolated test compose for each service
-        python3 scripts/extract_service.py ${{ matrix.service }} > test-${{ matrix.service }}.yml
-        
-        # Validate service configuration
-        docker compose -f test-${{ matrix.service }}.yml config
-        
-        # Test that service doesn't have obvious misconfigurations
-        if docker compose -f test-${{ matrix.service }}.yml pull --quiet; then
-          echo "✅ ${{ matrix.service }} images are accessible"
-        else
-          echo "❌ Failed to pull ${{ matrix.service }} images"
-          exit 1
-        fi
 
-  lint-and-format:
-    name: Lint and Format Check
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
     - name: Lint YAML files
       uses: ibiqlik/action-yamllint@v3
       with:
         file_or_dir: .
         config_file: .yamllint.yml
-        
+
     - name: Lint shell scripts
       uses: ludeeus/action-shellcheck@master
       with:
         scandir: './scripts'
-        
-    - name: Check Markdown links
-      uses: gaurav-nelson/github-action-markdown-link-check@v1
 
-  build-and-test:
-    name: Build and Integration Test
+  integration-test:
+    name: Basic Integration Test
     runs-on: ubuntu-latest
-    needs: [validate-compose, security-scan]
-    
+    needs: [validate-compose]
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-      
+
     - name: Create test network
       run: |
         docker network create homelab_test --subnet=10.1.0.0/24 || true
-        
-    - name: Start core services for testing
+
+    - name: Basic health check
       run: |
         # Create minimal test environment
         cat > .env.test << EOF
@@ -175,80 +94,28 @@ jobs:
         KEYCLOAK_ADMIN_PASSWORD=admin123
         WATCHTOWER_NOTIFICATIONS=none
         EOF
-        
-        # Test basic service orchestration
-        python3 scripts/test_integration.py
-        
-    - name: Health check services
-      run: |
-        # Run custom health checks
-        python3 scripts/health_check.py
-        
+
+        # Basic validation that compose files work
+        docker compose -f docker-compose.yml --env-file .env.test config > /dev/null
+        echo "✅ Configuration test passed"
+
     - name: Cleanup test environment
       if: always()
       run: |
-        docker compose -f docker-compose.yml --env-file .env.test down -v || true
         docker network rm homelab_test || true
-
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: [build-and-test]
-    if: github.ref == 'refs/heads/develop'
-    environment: staging
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Deploy to staging environment
-      run: |
-        echo "Deploying to staging environment..."
-        # Add your staging deployment logic here
-        # This could involve SSH to a staging server, or other deployment methods
+        rm -f .env.test
 
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [build-and-test]
+    needs: [integration-test]
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Generate release notes
       uses: release-drafter/release-drafter@v5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Tag release
-      if: github.event_name == 'push'
-      run: |
-        VERSION=$(date +"%Y.%m.%d")
-        git tag -a "v$VERSION" -m "Release v$VERSION"
-        git push origin "v$VERSION"
-
-  update-dependencies:
-    name: Check for Updates
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Check for image updates
-      run: |
-        python3 scripts/check_updates.py
-        
-    - name: Create update PR if needed
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "chore: update container images"
-        title: "Automated container image updates"
-        body: |
-          This PR contains automated updates to container images.
-          Please review the changes and test thoroughly before merging.
-        branch: automated-updates

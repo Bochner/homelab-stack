@@ -43,13 +43,8 @@
     "ms-vscode.vscode-typescript-next",
     "bradlc.vscode-tailwindcss",
 
-    // Security and best practices
-    "snyk-security.snyk-vulnerability-scanner",
-    "ms-vscode.vscode-github-issue-notebooks",
-
-    // DevOps and CI/CD
+    // DevOps and CI/CD (simplified for homelab)
     "github.vscode-github-actions",
-    "ms-vscode.vscode-github-issue-notebooks",
 
     // Environment files
     "mikestead.dotenv"

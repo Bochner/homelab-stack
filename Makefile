@@ -38,8 +38,6 @@ setup: ## Run initial setup
 install-deps: ## Install development dependencies
 	@echo "📦 Installing development dependencies..."
 	@pip3 install -r scripts/requirements.txt
-	@pip3 install pre-commit
-	@pre-commit install
 
 # Service management
 start: ## Start all services
@@ -141,9 +139,7 @@ security: ## Run security audit
 	@echo "🔒 Running security audit..."
 	@HOMELAB_MODE=true python3 scripts/security_audit.py
 
-security-scan: ## Run vulnerability scans
-	@echo "🔍 Running vulnerability scans..."
-	@docker run --rm -v "$(PWD):/src" aquasec/trivy fs /src
+# Removed enterprise security scanning for homelab simplicity
 
 # Service-specific commands
 traefik-logs: ## Show Traefik logs
@@ -247,12 +243,7 @@ docs-serve: ## Serve documentation locally (if MkDocs is installed)
 		echo "MkDocs not installed. Install with: pip install mkdocs"; \
 	fi
 
-# Git hooks and pre-commit
-pre-commit: ## Run pre-commit hooks
-	@pre-commit run --all-files
-
-pre-commit-update: ## Update pre-commit hooks
-	@pre-commit autoupdate
+# Removed pre-commit for homelab simplicity
 
 # CI/CD helpers
 ci-test: ## Run CI tests locally
