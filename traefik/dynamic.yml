@@ -1,0 +1,53 @@
+# Dynamic configuration
+http:
+  middlewares:
+    # Basic Auth for Traefik Dashboard and Dockge
+    auth:
+      basicAuth:
+        users:
+          # Generate password hash: echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
+          # Example: admin:$2y$10$... (replace with your generated hash)
+          # Default below is admin:admin - CHANGE THIS IMMEDIATELY!
+          - "admin:$2y$10$2b2cu2Fw1ZfqRkqBfXkKyOeH69z9/oIpxVCD9gUseXJU6fcZWoKQC"
+    
+    # Security Headers
+    security-headers:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+          - POST
+          - DELETE
+        accessControlMaxAge: 100
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        referrerPolicy: "same-origin"
+        sslRedirect: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        frameDeny: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        customResponseHeaders:
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
+    
+    # Rate Limiting
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+
+  # TLS Options
+  tls:
+    options:
+      default:
+        minVersion: "VersionTLS12"
+        cipherSuites:
+          - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+          - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+          - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+          - "TLS_AES_256_GCM_SHA384"
+          - "TLS_CHACHA20_POLY1305_SHA256"

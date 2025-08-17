@@ -1,0 +1,38 @@
+- Infrastructure:
+    - Traefik:
+        href: https://traefik.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Reverse Proxy & Load Balancer
+        icon: traefik.png
+        server: my-docker
+        container: traefik
+    - Pi-hole:
+        href: https://pihole.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Network-wide Ad Blocking
+        icon: pi-hole.png
+        server: my-docker
+        container: pihole
+    - Keycloak:
+        href: https://keycloak.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Identity & Access Management
+        icon: keycloak.png
+        server: my-docker
+        container: keycloak
+    - Dockge:
+        href: https://dockge.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Docker Compose Manager
+        icon: dockge.png
+        server: my-docker
+        container: dockge
+
+- Monitoring:
+    - Uptime Kuma:
+        href: https://uptime.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Uptime Monitoring
+        icon: uptime-kuma.png
+        server: my-docker
+        container: uptime-kuma
+    - Watchtower:
+        description: Automatic Container Updates
+        icon: watchtower.png
+        server: my-docker
+        container: watchtower

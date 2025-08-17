@@ -1,0 +1,17 @@
+title: Homelab Dashboard
+favicon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/heimdall.png
+
+providers:
+  docker:
+    endpoint: unix:///var/run/docker.sock
+
+layout:
+  Infrastructure:
+    style: row
+    columns: 4
+  Services:
+    style: row
+    columns: 3
+  Monitoring:
+    style: row
+    columns: 2

@@ -1,0 +1,35 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Traefik
+traefik/acme.json
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Docker volumes (if stored locally)
+volumes/
+data/
+
+# Temporary files
+*.tmp
+*.temp
