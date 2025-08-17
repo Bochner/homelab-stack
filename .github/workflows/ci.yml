@@ -1,0 +1,124 @@
+name: Homelab Stack CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-compose:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Validate main docker-compose.yml
+      run: |
+        docker compose -f docker-compose.yml config > /dev/null
+        echo "✅ Main docker-compose.yml is valid"
+
+    - name: Validate template files
+      run: |
+        if [ -f templates/docker-compose.template.yml ]; then
+          # Create temporary env for validation
+          cat > .env.test << EOF
+        DOMAIN=test.example.com
+        TZ=UTC
+        CF_EMAIL=test@example.com
+        CF_API_TOKEN=test-token
+        PIHOLE_PASSWORD=test-pass
+        KEYCLOAK_DB_USER=test-user
+        KEYCLOAK_DB_PASSWORD=test-pass
+        KEYCLOAK_ADMIN_USER=admin
+        KEYCLOAK_ADMIN_PASSWORD=test-pass
+        WATCHTOWER_NOTIFICATIONS=none
+        EOF
+
+          # Create a temporary compose file with placeholders replaced
+          cp templates/docker-compose.template.yml docker-compose.template.test.yml
+
+          # Replace placeholders with valid test values (Linux sed syntax)
+          sed -i 's/<service_name>/testservice/g' docker-compose.template.test.yml
+          sed -i 's/<image_name>/nginx/g' docker-compose.template.test.yml
+          sed -i 's/<tag>/alpine/g' docker-compose.template.test.yml
+          sed -i 's/<port>/80/g' docker-compose.template.test.yml
+          sed -i 's/<XX>/99/g' docker-compose.template.test.yml
+          sed -i 's/<SERVICE_VAR>/TEST_VAR/g' docker-compose.template.test.yml
+          sed -i 's/<SERVICE_NAME>/TESTSERVICE/g' docker-compose.template.test.yml
+
+          # Validate the processed template
+          docker compose -f docker-compose.template.test.yml --env-file .env.test config > /dev/null
+          echo "✅ Template docker-compose.yml is valid"
+
+          # Cleanup
+          rm .env.test docker-compose.template.test.yml
+        fi
+
+  basic-lint:
+    name: Basic Linting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Lint YAML files
+      uses: ibiqlik/action-yamllint@v3
+      with:
+        file_or_dir: .
+        config_file: .yamllint.yml
+
+    - name: Lint shell scripts
+      uses: ludeeus/action-shellcheck@master
+      with:
+        scandir: './scripts'
+
+  integration-test:
+    name: Basic Integration Test
+    runs-on: ubuntu-latest
+    needs: [validate-compose]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Create test network
+      run: |
+        docker network create homelab_test --subnet=10.1.0.0/24 || true
+
+    - name: Basic health check
+      run: |
+        # Create minimal test environment
+        cat > .env.test << EOF
+        DOMAIN=test.local
+        TZ=UTC
+        CF_EMAIL=test@example.com
+        CF_API_TOKEN=dummy-token
+        PIHOLE_PASSWORD=test123
+        KEYCLOAK_DB_USER=testuser
+        KEYCLOAK_DB_PASSWORD=testpass123
+        KEYCLOAK_ADMIN_USER=admin
+        KEYCLOAK_ADMIN_PASSWORD=admin123
+        WATCHTOWER_NOTIFICATIONS=none
+        EOF
+
+        # Basic validation that compose files work
+        docker compose -f docker-compose.yml --env-file .env.test config > /dev/null
+        echo "✅ Configuration test passed"
+
+    - name: Cleanup test environment
+      if: always()
+      run: |
+        docker network rm homelab_test || true
+        rm -f .env.test
+
+

@@ -32,12 +32,12 @@ log_error() {
 # Print banner
 print_banner() {
     cat << "EOF"
-    __  __                     __      __       _____ __             __  
+    __  __                     __      __       _____ __             __
    / / / /___  ____ ___  ___  / /___ _/ /_    / ___// /_____ ______/ /__
   / /_/ / __ \/ __ `__ \/ _ \/ / __ `/ __ \   \__ \/ __/ __ `/ ___/ //_/
- / __  / /_/ / / / / / /  __/ / /_/ / /_/ /  ___/ / /_/ /_/ / /__/ ,<   
-/_/ /_/\____/_/ /_/ /_/\___/_/\__,_/_.___/  /____/\__/\__,_/\___/_/|_|  
-                                                          
+ / __  / /_/ / / / / / /  __/ / /_/ / /_/ /  ___/ / /_/ /_/ / /__/ ,<
+/_/ /_/\____/_/ /_/ /_/\___/_/\__,_/_.___/  /____/\__/\__,_/\___/_/|_|
+
 
 EOF
 }
@@ -45,35 +45,35 @@ EOF
 # Check prerequisites
 check_prerequisites() {
     log_info "Checking prerequisites..."
-    
+
     # Check if running as root
     if [[ $EUID -eq 0 ]]; then
         log_error "This script should not be run as root for security reasons"
         log_info "Please run as a regular user with sudo privileges"
         exit 1
     fi
-    
+
     # Check Docker
     if ! command -v docker &> /dev/null; then
         log_error "Docker is not installed. Please install Docker first."
         log_info "Visit: https://docs.docker.com/engine/install/"
         exit 1
     fi
-    
+
     # Check Docker Compose
     if ! docker compose version &> /dev/null; then
         log_error "Docker Compose v2 is not installed or not working properly"
         log_info "Visit: https://docs.docker.com/compose/install/"
         exit 1
     fi
-    
+
     # Check Docker daemon
     if ! docker info &> /dev/null; then
         log_error "Docker daemon is not running or you don't have permissions"
         log_info "Try: sudo systemctl start docker && sudo usermod -aG docker $USER"
         exit 1
     fi
-    
+
     # Check minimum Docker version (20.10+)
     DOCKER_VERSION=$(docker version --format '{{.Server.Version}}' | cut -d. -f1,2)
     MIN_VERSION="20.10"
@@ -81,7 +81,7 @@ check_prerequisites() {
         log_error "Docker version $DOCKER_VERSION is too old. Minimum required: $MIN_VERSION"
         exit 1
     fi
-    
+
     log_info "All prerequisites met ✓"
 }
 
@@ -102,7 +102,7 @@ backup_existing() {
 # Create directory structure
 create_directory_structure() {
     log_info "Creating directory structure..."
-    
+
     # Core directories
     sudo mkdir -p "$HOMELAB_ROOT"/{core,services,monitoring,management,backups,logs}
     sudo mkdir -p "$HOMELAB_ROOT"/core/{traefik,network}
@@ -110,18 +110,18 @@ create_directory_structure() {
     sudo mkdir -p "$HOMELAB_ROOT"/monitoring/{uptime-kuma,watchtower}
     sudo mkdir -p "$HOMELAB_ROOT"/management/{dockge,homepage}
     sudo mkdir -p "$STACKS_ROOT"
-    
+
     # Set ownership
     sudo chown -R "$USER:$USER" "$HOMELAB_ROOT"
     sudo chown -R "$USER:$USER" "$STACKS_ROOT"
-    
+
     log_info "Directory structure created ✓"
 }
 
 # Create modular docker-compose files
 create_core_network() {
     log_info "Creating core network configuration..."
-    
+
     cat > "$HOMELAB_ROOT/core/network/docker-compose.yml" << 'EOF'
 version: '3.9'
 
@@ -138,7 +138,7 @@ EOF
 
 create_traefik_config() {
     log_info "Creating Traefik configuration..."
-    
+
     # Main docker-compose for Traefik
     cat > "$HOMELAB_ROOT/core/traefik/docker-compose.yml" << 'EOF'
 version: '3.9'
@@ -190,7 +190,7 @@ EOF
 
     # Create config directory
     mkdir -p "$HOMELAB_ROOT/core/traefik/config"
-    
+
     # Copy traefik configs
     cp ./traefik/traefik.yml "$HOMELAB_ROOT/core/traefik/config/"
     cp ./traefik/dynamic.yml "$HOMELAB_ROOT/core/traefik/config/"
@@ -198,7 +198,7 @@ EOF
 
 create_service_configs() {
     log_info "Creating service configurations..."
-    
+
     # Pi-hole
     cat > "$HOMELAB_ROOT/services/pihole/docker-compose.yml" << 'EOF'
 version: '3.9'
@@ -326,7 +326,7 @@ EOF
 
     # Create monitoring service configs
     create_monitoring_configs
-    
+
     # Create management service configs
     create_management_configs
 }
@@ -477,7 +477,7 @@ EOF
 # Create management scripts
 create_management_scripts() {
     log_info "Creating management scripts..."
-    
+
     # Start all services
     cat > "$HOMELAB_ROOT/start-all.sh" << 'EOF'
 #!/bin/bash
@@ -605,7 +605,7 @@ EOF
 # Copy environment file
 setup_environment() {
     log_info "Setting up environment configuration..."
-    
+
     if [ -f "$HOMELAB_ROOT/.env" ]; then
         log_warn ".env file already exists"
         read -p "Do you want to overwrite it? (y/N): " -n 1 -r
@@ -615,46 +615,46 @@ setup_environment() {
             return
         fi
     fi
-    
+
     cp .env.example "$HOMELAB_ROOT/.env"
     chmod 600 "$HOMELAB_ROOT/.env"
-    
+
     log_warn "Please edit $HOMELAB_ROOT/.env with your configuration"
 }
 
 # Interactive setup wizard
 setup_wizard() {
     log_info "Starting interactive setup wizard..."
-    
+
     # Domain configuration
-    read -p "Enter your domain (e.g., example.com): " DOMAIN
+    read -rp "Enter your domain (e.g., example.com): " DOMAIN
     sed -i "s/DOMAIN=.*/DOMAIN=$DOMAIN/" "$HOMELAB_ROOT/.env"
-    
+
     # Timezone
-    read -p "Enter your timezone (default: America/New_York): " TZ
+    read -rp "Enter your timezone (default: America/New_York): " TZ
     TZ=${TZ:-America/New_York}
     sed -i "s|TZ=.*|TZ=$TZ|" "$HOMELAB_ROOT/.env"
-    
+
     # Cloudflare
-    read -p "Enter your Cloudflare email: " CF_EMAIL
+    read -rp "Enter your Cloudflare email: " CF_EMAIL
     sed -i "s/CF_EMAIL=.*/CF_EMAIL=$CF_EMAIL/" "$HOMELAB_ROOT/.env"
-    
-    read -sp "Enter your Cloudflare API token: " CF_TOKEN
+
+    read -rsp "Enter your Cloudflare API token: " CF_TOKEN
     echo
     sed -i "s/CF_API_TOKEN=.*/CF_API_TOKEN=$CF_TOKEN/" "$HOMELAB_ROOT/.env"
-    
+
     # Generate secure passwords
     log_info "Generating secure passwords..."
     PIHOLE_PASS=$(openssl rand -base64 32)
     KEYCLOAK_DB_PASS=$(openssl rand -base64 32)
     KEYCLOAK_ADMIN_PASS=$(openssl rand -base64 32)
-    
+
     sed -i "s/PIHOLE_PASSWORD=.*/PIHOLE_PASSWORD=$PIHOLE_PASS/" "$HOMELAB_ROOT/.env"
     sed -i "s/KEYCLOAK_DB_USER=.*/KEYCLOAK_DB_USER=keycloak/" "$HOMELAB_ROOT/.env"
     sed -i "s/KEYCLOAK_DB_PASSWORD=.*/KEYCLOAK_DB_PASSWORD=$KEYCLOAK_DB_PASS/" "$HOMELAB_ROOT/.env"
     sed -i "s/KEYCLOAK_ADMIN_USER=.*/KEYCLOAK_ADMIN_USER=admin/" "$HOMELAB_ROOT/.env"
     sed -i "s/KEYCLOAK_ADMIN_PASSWORD=.*/KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASS/" "$HOMELAB_ROOT/.env"
-    
+
     log_info "Configuration saved to $HOMELAB_ROOT/.env"
     log_warn "Passwords have been generated. Save them securely!"
     echo "Pi-hole Admin Password: $PIHOLE_PASS"
@@ -664,30 +664,32 @@ setup_wizard() {
 # Deploy services
 deploy_services() {
     log_info "Deploying services..."
-    
+
     # Check if .env is configured
     if grep -q "your-email@example.com" "$HOMELAB_ROOT/.env"; then
         log_error ".env file not configured!"
         log_info "Please run with --wizard flag or edit $HOMELAB_ROOT/.env manually"
         exit 1
     fi
-    
+
     # Create Docker network
     log_info "Creating Docker network..."
     docker network create homelab_net --subnet=10.0.0.0/24 2>/dev/null || log_info "Network already exists"
-    
+
     # Load environment variables
+    set -a
+    # shellcheck source=/dev/null
     source "$HOMELAB_ROOT/.env"
-    export $(grep -v '^#' "$HOMELAB_ROOT/.env" | xargs)
-    
+    set +a
+
     # Deploy services using the start script
     log_info "Starting all services..."
     bash "$HOMELAB_ROOT/start-all.sh"
-    
+
     # Wait for services to be healthy
     log_info "Waiting for services to be healthy..."
     sleep 30
-    
+
     # Run health check
     bash "$HOMELAB_ROOT/health-check.sh"
 }
@@ -698,6 +700,7 @@ print_completion() {
     log_info "✅ Homelab deployment complete!"
     echo ""
     # Load domain from environment
+    # shellcheck source=/dev/null
     source "$HOMELAB_ROOT/.env" 2>/dev/null || true
     echo "🌐 Access your services at:"
     echo "   Homepage: https://$DOMAIN or https://home.$DOMAIN"
@@ -725,11 +728,11 @@ print_completion() {
 # Main execution
 main() {
     print_banner
-    
+
     # Parse command line arguments
     WIZARD=false
     SKIP_DEPLOY=false
-    
+
     while [[ $# -gt 0 ]]; do
         case $1 in
             --wizard|-w)
@@ -754,7 +757,7 @@ main() {
                 ;;
         esac
     done
-    
+
     # Execute setup steps
     check_prerequisites
     backup_existing
@@ -764,11 +767,11 @@ main() {
     create_service_configs
     create_management_scripts
     setup_environment
-    
+
     if [ "$WIZARD" = true ]; then
         setup_wizard
     fi
-    
+
     if [ "$SKIP_DEPLOY" = false ]; then
         deploy_services
         print_completion

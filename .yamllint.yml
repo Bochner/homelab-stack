@@ -1,0 +1,69 @@
+# yamllint configuration for homelab stack
+# This configuration ensures YAML files follow consistent formatting
+
+extends: default
+
+rules:
+  # Line length - allow longer lines for Docker commands and URLs
+  line-length:
+    max: 120
+    level: warning
+
+  # Comments
+  comments:
+    min-spaces-from-content: 1
+
+  # Indentation - use 2 spaces consistently
+  indentation:
+    spaces: 2
+
+  # Allow quoted strings for consistency with Docker Compose
+  quoted-strings:
+    quote-type: any
+    required: false
+
+  # Allow empty values in YAML (common in Docker Compose)
+  empty-values:
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: false
+
+  # Truthy values - allow common Docker Compose patterns
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+    check-keys: false
+
+  # Document start/end - not required for Docker Compose files
+  document-start:
+    present: false
+  document-end:
+    present: false
+
+  # Brackets - allow both styles
+  brackets:
+    max-spaces-inside: 1
+    max-spaces-inside-empty: 0
+
+  # Braces - allow both styles
+  braces:
+    max-spaces-inside: 1
+    max-spaces-inside-empty: 0
+
+  # Key ordering - don't enforce strict ordering
+  key-ordering: disable
+
+  # Octal values - allow for file permissions
+  octal-values:
+    forbid-implicit-octal: false
+    forbid-explicit-octal: false
+
+# Ignore patterns
+ignore: |
+  .git/
+  .github/
+  volumes/
+  data/
+  logs/
+  *.log
+  node_modules/
+  .venv/
+  __pycache__/

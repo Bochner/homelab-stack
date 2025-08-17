@@ -1,4 +1,5 @@
-version: '3.9'
+# Docker Compose file for Homelab Stack
+# No version needed for Docker Compose v2+
 
 networks:
   homelab_net:
@@ -168,7 +169,7 @@ services:
     environment:
       TZ: ${TZ}
       WATCHTOWER_CLEANUP: true
-      WATCHTOWER_SCHEDULE: "0 0 4 * * *"  # 4 AM daily
+      WATCHTOWER_SCHEDULE: "0 0 4 * * *" # 4 AM daily
       WATCHTOWER_NOTIFICATIONS: ${WATCHTOWER_NOTIFICATIONS:-none}
       WATCHTOWER_NOTIFICATION_EMAIL_FROM: ${WATCHTOWER_EMAIL_FROM:-}
       WATCHTOWER_NOTIFICATION_EMAIL_TO: ${WATCHTOWER_EMAIL_TO:-}
@@ -260,7 +261,15 @@ services:
       - "traefik.http.services.homepage.loadbalancer.server.port=3000"
       - "traefik.http.routers.homepage.middlewares=security-headers@file"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
