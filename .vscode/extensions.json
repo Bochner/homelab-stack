@@ -1,0 +1,61 @@
+{
+  "recommendations": [
+    // Docker and Containers
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-containers",
+
+    // YAML and Configuration
+    "redhat.vscode-yaml",
+    "ms-kubernetes-tools.vscode-kubernetes-tools",
+
+    // Shell scripting
+    "timonwong.shellcheck",
+    "foxundermoon.shell-format",
+    "mads-hartmann.bash-ide-vscode",
+
+    // Python development
+    "ms-python.python",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "ms-python.flake8",
+    "ms-python.pylint",
+    "ms-python.mypy-type-checker",
+
+    // Git and version control
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+    "github.copilot",
+
+    // Productivity and organization
+    "gruntfuggly.todo-tree",
+    "aaron-bond.better-comments",
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.vscode-json",
+
+    // Markdown and documentation
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    "shd101wyy.markdown-preview-enhanced",
+
+    // General utilities
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+
+    // Security and best practices
+    "snyk-security.snyk-vulnerability-scanner",
+    "ms-vscode.vscode-github-issue-notebooks",
+
+    // DevOps and CI/CD
+    "github.vscode-github-actions",
+    "ms-vscode.vscode-github-issue-notebooks",
+
+    // Environment files
+    "mikestead.dotenv"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript",
+    "hookyqr.beautify"
+  ]
+}

@@ -1,0 +1,60 @@
+# YAML Linting Configuration for Homelab Stack
+extends: default
+
+rules:
+  # Line length - Docker Compose files can have long lines
+  line-length:
+    max: 120
+    level: warning
+
+  # Indentation - Use 2 spaces consistently
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Comments - Allow comments without spaces
+  comments:
+    min-spaces-from-content: 1
+    require-starting-space: false
+
+  # Document separators
+  document-start:
+    present: false  # Don't require --- at start
+
+  # Trailing spaces
+  trailing-spaces: enable
+
+  # Empty lines
+  empty-lines:
+    max: 2
+    max-start: 0
+    max-end: 1
+
+  # Brackets and braces
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Key duplicates
+  key-duplicates: enable
+
+  # Octal values
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+
+  # Truthy values - Allow yes/no for Docker Compose
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+    check-keys: false
+
+ignore: |
+  .github/
+  .vscode/
+  volumes/
+  data/

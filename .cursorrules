@@ -1,0 +1,184 @@
+# Cursor Rules for Homelab Stack Development
+
+## Project Overview
+This is a Docker-based homelab stack with Traefik reverse proxy, Pi-hole DNS, Keycloak authentication, and monitoring services. The project emphasizes security, modularity, and ease of deployment.
+
+## Code Style & Standards
+
+### Docker Compose Files
+- Use version '3.9' for all compose files
+- Always include restart policies (prefer `unless-stopped`)
+- Use specific image tags instead of `latest` for production services
+- Include health checks for all services where possible
+- Use named volumes for persistent data
+- Apply security options: `no-new-privileges:true`
+- Use the homelab_net network with static IP assignments (10.0.0.x)
+
+### Environment Variables
+- All secrets must be in .env files (never hardcode)
+- Use descriptive variable names with service prefixes
+- Document all variables in README.md
+- Validate required variables in setup scripts
+
+### Traefik Configuration
+- Always use HTTPS with automatic SSL certificates
+- Include security headers middleware
+- Use proper router naming convention: `service-name`
+- Apply authentication middleware for admin interfaces
+- Use Cloudflare DNS challenge for SSL certificates
+
+### Shell Scripts
+- Use strict mode: `set -euo pipefail`
+- Include comprehensive error handling
+- Use colored output for better UX
+- Include help text and usage examples
+- Make scripts idempotent where possible
+
+### Python Scripts
+- Use type hints for all functions
+- Include comprehensive error handling
+- Use proper logging instead of print statements
+- Follow PEP 8 style guidelines
+- Include docstrings for all functions and classes
+
+## Security Best Practices
+
+### Container Security
+- Run containers as non-root users when possible
+- Use `no-new-privileges:true` security option
+- Mount Docker socket as read-only when possible
+- Use specific image versions, not latest
+- Regularly update base images
+
+### Network Security
+- Use isolated Docker networks
+- Don't expose internal ports unless necessary
+- Apply proper firewall rules
+- Use strong authentication for admin interfaces
+
+### Secrets Management
+- Never commit .env files to version control
+- Use strong, unique passwords for all services
+- Rotate credentials regularly
+- Use htpasswd for basic authentication
+
+## File Organization
+
+### Directory Structure
+```
+homelab-stack/
+├── .github/workflows/     # CI/CD pipelines
+├── docs/                  # Documentation
+├── scripts/               # Utility scripts
+├── traefik/              # Traefik configuration
+├── homepage/             # Homepage dashboard config
+├── templates/            # Service templates
+└── docker-compose.yml   # Main service definitions
+```
+
+### Naming Conventions
+- Use kebab-case for directories and files
+- Use snake_case for variables and functions
+- Use descriptive names that indicate purpose
+- Prefix environment variables with service name
+
+## Development Workflow
+
+### Before Making Changes
+- Read existing documentation thoroughly
+- Understand service dependencies
+- Test changes in isolated environment
+- Check for breaking changes
+
+### Testing Requirements
+- All services must have health checks
+- Include integration tests for service communication
+- Test SSL certificate generation
+- Validate environment variable handling
+
+### Documentation
+- Update README.md for any configuration changes
+- Document new services in ADDING_SERVICES.md
+- Include troubleshooting information
+- Provide clear setup instructions
+
+## Common Patterns
+
+### Adding New Services
+1. Choose appropriate category (services/monitoring/management)
+2. Create dedicated directory with docker-compose.yml
+3. Use homelab_net network with unique IP
+4. Include Traefik labels for reverse proxy
+5. Add health checks and monitoring
+6. Document in service README
+
+### Service Dependencies
+- Use `depends_on` with health check conditions
+- Include proper startup order in orchestration scripts
+- Handle service failures gracefully
+- Implement retry logic where appropriate
+
+### Configuration Management
+- Use .env files for all configuration
+- Provide .env.example with documentation
+- Validate configuration in setup scripts
+- Use environment variable substitution in compose files
+
+## AI Assistant Guidelines
+
+When helping with this project:
+
+### Code Generation
+- Always include proper error handling
+- Use the established patterns and conventions
+- Include appropriate comments and documentation
+- Test configurations before suggesting
+
+### Service Integration
+- Ensure new services integrate with Traefik
+- Include monitoring and health checks
+- Consider security implications
+- Document access URLs and credentials
+
+### Troubleshooting
+- Check logs systematically (container -> service -> network)
+- Verify environment variables and DNS resolution
+- Test SSL certificates and routing
+- Validate service dependencies
+
+### Best Practices
+- Prioritize security and reliability
+- Maintain consistency with existing code
+- Consider scalability and maintenance
+- Provide clear documentation and examples
+
+## Common Commands
+
+### Development
+```bash
+# Validate compose files
+docker compose config
+
+# Check service health
+./scripts/health_check.py
+
+# View service logs
+docker compose logs -f [service]
+
+# Update single service
+./scripts/update-service.sh [service]
+```
+
+### Debugging
+```bash
+# Test network connectivity
+docker network inspect homelab_net
+
+# Check Traefik routing
+docker logs traefik | grep -i error
+
+# Validate SSL certificates
+curl -I https://service.domain.com
+```
+
+Remember: This homelab stack emphasizes security, reliability, and ease of management. All changes should align with these principles while maintaining the modular architecture that makes the system maintainable.

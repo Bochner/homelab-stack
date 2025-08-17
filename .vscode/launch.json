@@ -1,0 +1,54 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Health Check Script",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/health_check.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/scripts"
+      }
+    },
+    {
+      "name": "Debug Integration Tests",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/test_integration.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/scripts"
+      }
+    },
+    {
+      "name": "Debug Service Extractor",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/extract_service.py",
+      "args": ["traefik"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/scripts"
+      }
+    },
+    {
+      "name": "Attach to Docker Container",
+      "type": "python",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"
+        }
+      ]
+    }
+  ]
+}
